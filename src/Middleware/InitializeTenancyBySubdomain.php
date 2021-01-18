@@ -31,9 +31,14 @@ class InitializeTenancyBySubdomain extends InitializeTenancyByDomain
      * @param  \Closure  $next
      * @return mixed
      */
-    public function handle($request, Closure $next)
+    public function handle($request, Closure $next,bool $useRefererHeader = false)
     {
-        $subdomain = $this->makeSubdomain($request->getHost());
+        if($useRefererHeader && $request->headers->has('HTTP_REFERRER')){
+            $subdomain = $this->makeSubdomain($request->getHeader('HTTP_REFERRER'));
+        }else{
+            $subdomain = $this->makeSubdomain($request->getHost());
+        }
+        
 
         if (is_object($subdomain) && $subdomain instanceof Exception) {
             $onFail = static::$onFail ?? function ($e) {

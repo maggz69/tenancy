@@ -16,12 +16,18 @@ class InitializeTenancyByDomainOrSubdomain
      * @param  \Closure  $next
      * @return mixed
      */
-    public function handle($request, Closure $next)
+    public function handle($request, Closure $next,bool $useRefererHeader = false)
     {
-        if ($this->isSubdomain($request->getHost())) {
-            return app(InitializeTenancyBySubdomain::class)->handle($request, $next);
+        $referrerHeaderHostname = null;
+
+        if($useRefererHeader && $request->headers->has('HTTP_REFERRER') ){
+            $referrerHeaderHostname = $request->getHeader('HTTP_REFERRER');
+        }
+
+        if ($this->isSubdomain($referrerHeaderHostname ?? $request->getHost())) {
+            return app(InitializeTenancyBySubdomain::class)->handle($request, $next,isset($referrerHeaderHostname));
         } else {
-            return app(InitializeTenancyByDomain::class)->handle($request, $next);
+            return app(InitializeTenancyByDomain::class)->handle($request, $next,isset($referrerHeaderHostname));
         }
     }
 

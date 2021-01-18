@@ -32,8 +32,13 @@ class InitializeTenancyByDomain extends IdentificationMiddleware
      * @param  \Closure  $next
      * @return mixed
      */
-    public function handle($request, Closure $next)
+    public function handle($request, Closure $next,bool $useRefererHeader = false)
     {
+        if($useRefererHeader && $request->headers->has('HTTP_REFERRER')){
+            return $this->initializeTenancy(
+                $request, $next, $request->getHeader('HTTP_REFERRER')
+            );    
+        }
         return $this->initializeTenancy(
             $request, $next, $request->getHost()
         );
